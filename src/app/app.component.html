@@ -5,10 +5,10 @@
   />
 </div>
 
+<button (click)="destroyCourses()">Distruggi corsi</button>
+
 <div>
-  <h1>corsi from courses</h1>
-  <!-- voglio mostrare i dati provenienti dalla variabile courses che è undefined all'inizio e dopo viene valorizzata tramite assegnazione di observable -->
-  <!-- non viene renderizzato nulla sullo schermo con la change detection OnPush -->
+  <!-- <h1>corsi from courses</h1>
   <div class="courses">
     <course-card
       *ngFor="let course of courses"
@@ -19,9 +19,7 @@
     </course-card>
   </div>
 
-  <h1>corsi from courses$</h1>
-  <!-- questi invece li vedo perchè courses$ è un observable e viene sottoscritto nel template tramite pipe async -->
-  <!-- ATTRIBUTE DECORATOR, se avessi una proprietà che passo dal parent al componente e so che non cambierà mai, per ottimizzare le prestazioni della change detection e quindi di dirgli di non controllarla perchè non cambierà, non la devo passare come se fosse un @Input nel componente, ad esempio [type]="'stringa'", cioè nel componente dovrei avere un @Input() type: string, invece la metto come attributo normale con un valore e nel ts la riceverò nel costruttore tramite @Attribute('type') -->
+  <h1>corsi from courses$</h1> -->
   <div class="courses" *ngIf="courses$ | async as courses">
     <course-card
       *ngFor="let course of courses"

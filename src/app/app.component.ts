@@ -18,8 +18,8 @@ import { COURSES } from "../db-data";
 import { Course } from "./model/course";
 import { CourseCardComponent } from "./course-card/course-card.component";
 import { HighlightedDirective } from "./directives/highlighted.directive";
-import { Observable } from "rxjs";
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { observable, Observable } from "rxjs";
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { CoursesService } from "./services/courses.service";
 import { APP_CONFIG, AppConfig, CONFIG_TOKEN } from "./configurazioniApp";
 
@@ -27,62 +27,65 @@ import { APP_CONFIG, AppConfig, CONFIG_TOKEN } from "./configurazioniApp";
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.css"],
-  // se utilizzo la change detection in modalità OnPush posso visualizzare i dati sullo schermo solo in 3 casi: se c'è un cambiamento dovuto ad un evento, o ad un evento legato ad un cambiamento del dom o un evento customizzato. Oppure se i dati vengono passati tramite @Input al componente e qualcosa di questi cambia. Oppure se i dati vengono ricevuti dal template attraverso l'utilizzo del pipe ASYNC
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
-// la CHANGE DETECTION è un meccanismo con il quale ng ricostruisce la view ogni volta che il model cambia
-export class AppComponent implements OnInit, DoCheck {
-  // se faccio arrivare i dati tramite assegnazione di observable a questa variabile, che all'inizio è undefined, non li vedrò sullo schermo perchè non si avvera nessuno dei 3 casi per cui la change detection OnPush ritiene che debbano essere renderizzati
-  // courses: Course[] = COURSES;
+export class AppComponent {
   courses: Course[];
 
-  courses$: Observable<Course[]>; // valore assegnato ricevndo lìobservable tramite chiamata con HttpClient direttamente dal componente
+  courses$: Observable<Course[]>;
 
-  coursesService$: Observable<Course[]>; // valore assegnato ricevendo l'observable tramite service
+  coursesService$: Observable<Course[]>;
 
-  // ogni componente di NG ha a disposizione un ChangeDetector che può essere iniettato ed utilizzato per dichiarare manualmente che qualcosa deve essere controllato da ng
+  // ogni volta che viene creato un componente NG chiama il costruttore,il suo scopo principale sarebbe quello di passare le dipendenze che serviranno al componente
+  // non vengono popolate le variabili di @Input
   constructor(
     private http: HttpClient,
     @Optional() private coursesService: CoursesService,
-    @Inject(CONFIG_TOKEN) private configObject: AppConfig,
-    private changeDetector: ChangeDetectorRef
+    @Inject(CONFIG_TOKEN) private configObject: AppConfig
   ) {
     console.log(configObject);
   }
 
-  ngDoCheck(): void {
-    //Called every time that the input properties of a component or a directive are checked. Use it to extend change detection by performing a custom check.
-    //Add 'implements DoCheck' to the class.
-    this.changeDetector.markForCheck();
-  }
-
+  // i metodi in questo gancio vengo chiamati solo una volta, dopo quelli del costruttore
+  // entrambi vengono chiamati una volta ad ogni creazione del componente
+  // la differenza principale tra il costruttore e l'onInit è che nel costruttore le variabili di @Input della classe come ad esempio courses sono undefined, non sono popolate, in onInit si
+  // la logica del componente va inserita qui e non nel costruttore che non ne dovrebbe contenere
   ngOnInit() {
     const params = new HttpParams().set("page", "1").set("pageSize", "10");
+    const headerCourses = new HttpHeaders().set("X-Courses", "courses");
+    const headerCourses$ = new HttpHeaders().set("X-Courses", "courses$");
 
     // valorizzo la variabile courses con un observable dopo averlo sottoscritto
     this.http
-      .get<Course[]>("/api/courses", { params: params })
+      .get<Course[]>("/api/courses", { params: params, headers: headerCourses })
       .subscribe((valore) => {
         console.log(valore);
         this.courses = valore;
-
-        // utilizzo il metodo markForCheck del change detector per dire ad ng che questo componente deve essere controllato
-        // ora i dati passati alla variabile courses, pur non essendo uno dei 3 casi in cui la changedetection OnPush controlla e renderizza qualcosa, verrano visualizzati a schermo
-        // il controllo viene effettuato ogni volta che l'observable viene emesso
-        // il modo corretto di utilizzare questo metodo per customizzare la change detection, non è mettendolo qui, ma all'interno del lyfecycle hook DoCheck
-        // this.changeDetector.markForCheck();
       });
 
     // la variabile courses$ è un observable che viene sottoscritto nel template tramite pipe async
-    this.courses$ = this.http.get<Course[]>("/api/courses", { params: params });
+    this.courses$ = this.http.get<Course[]>("/api/courses", {
+      params: params,
+      headers: headerCourses$,
+    });
 
     this.coursesService$ = this.coursesService.loadCourses();
+  }
+
+  // lyfecycle hook giusto per terminare processi come iscrizione ad un observable
+  // lo provo nel coursecardcomponent
+  ngOnDestroy(): void {
+    //Called once, before the instance is destroyed.
+    //Add 'implements OnDestroy' to the class.
   }
 
   onCourseChanged(course: Course) {
     this.coursesService
       .saveCourse(course)
       .subscribe((value) => console.log(value.description));
+  }
+
+  destroyCourses() {
+    this.courses$ = Observable.create([]);
   }
 }

@@ -9,6 +9,7 @@ import {
   EventEmitter,
   Inject,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   QueryList,
@@ -22,10 +23,9 @@ import { CoursesService } from "../services/courses.service";
   selector: "course-card",
   templateUrl: "./course-card.component.html",
   styleUrls: ["./course-card.component.css"],
-  // se il nostro componente utilizza il metodo OnPUsh per il rilevamento delle modifiche, ng non analizzerà ogni espressione del template per rilevare modifiche, cercherà di rilevare i cambiamenti nei dati di @Input del componente
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CourseCardComponent implements OnInit {
+export class CourseCardComponent implements OnInit, OnDestroy {
   @Input()
   course: Course;
 
@@ -43,6 +43,13 @@ export class CourseCardComponent implements OnInit {
 
   ngOnInit() {}
 
+  // nel momento in cui clicco il button destroy courses, ng aggiorna la view e diswtrugge i componenti, chiama i metodi in questo hook ed ho il console log per ogni componente distrutto
+  ngOnDestroy(): void {
+    //Called once, before the instance is destroyed.
+    //Add 'implements OnDestroy' to the class.
+    console.log("distrutto componente");
+  }
+
   // il metodo onSaveClicked riceve il valore passato nell'input ed emette un evento custom che ha come payload un oggetto di tipo Course
   // copia di un oggetto tramite destrutturazione
   // tramite destrutturazione dell'oggetto creo una copia dell'oggetto Course dell'istanza e sostituisco il valore della proprietà description in esso contenuta con quello passato da input
@@ -52,7 +59,7 @@ export class CourseCardComponent implements OnInit {
     this.courseEmitter.emit({ ...this.course, description });
   }
 
-  // ogni volta che viene chiamato questo metodo, il titolo del corso cambia
+  // ogni volta che viene chiamato il metodo onTitleChanged, il titolo del corso cambia
   // ogni volta si attiva la change detection di ng, dopo ogni evento gestito da ng, viene controllato tutto il componente e viene valutato cosa è cambiato rispetto a prima dell'evento
   // L'unico modo che Angular ha per essere sicuro che la vista rifletta sempre correttamente i dati è eseguire nuovamente tutti questi controlli e aggiornare i componenti ogni volta che è necessario.
   // di defaul la change detection di NG confronta l'ultimo valore di un oggetto mutabile di js con quello che c'è dopo un evento e controlla se è cambiato e se rileva una differenza aggiorna la view
