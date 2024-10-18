@@ -1,4 +1,5 @@
 import {
+  AfterContentChecked,
   AfterContentInit,
   AfterViewInit,
   Attribute,
@@ -27,7 +28,9 @@ import { CoursesService } from "../services/courses.service";
   styleUrls: ["./course-card.component.css"],
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CourseCardComponent implements OnInit, OnDestroy, OnChanges {
+export class CourseCardComponent
+  implements OnInit, OnDestroy, OnChanges, AfterContentChecked
+{
   @Input()
   course: Course;
 
@@ -40,33 +43,46 @@ export class CourseCardComponent implements OnInit, OnDestroy, OnChanges {
 
   // ricevo il valore passato dal parent component nell'attributo type invece che riceverlo come @Input, in questo modo la change detection non andrà a controllare se ci sono state modifiche in questo input
   constructor(@Attribute("type") private type: string) {
-    console.log("costruttore");
+    console.log("constructor");
   }
 
   ngOnInit() {
-    console.log("oninit");
+    console.log("ngOnInit");
   }
 
   // nel momento in cui clicco il button destroy courses, ng aggiorna la view e diswtrugge i componenti, chiama i metodi in questo hook ed ho il console log per ogni componente distrutto
   ngOnDestroy(): void {
     //Called once, before the instance is destroyed.
     //Add 'implements OnDestroy' to the class.
-    console.log("ondestroy");
+    console.log("ngOnDestroy");
   }
 
   // chiamato subito dopo il costruttore, prima di ngOnInit
   // metodo utile se si vuole fare un confronto fra valori nuovi e vecchi
-  // metodo chiamato da NG ogni volta che cambia qualcosa nelle @Imput, dall'esterno, ogni volta che dal parent arriva un valore di @Input differente da quello corrente
+  // metodo chiamato da NG ogni volta che cambia qualcosa nelle @Input, dall'esterno, ogni volta che dal parent arriva un valore di @Input differente da quello corrente. Si attiva solo se si modifica il riferimento dell'oggetto e non una proprietà dell'oggetto stesso, deve essere quindi un nuovo oggetto
   // l'argomento changes è un oggetto contenente altri oggetti, ogni oggetto è una proprietà @Input con 3 proprietà: previousValue, currentValue e firstChange
   // SimpleChange è un type di angular
   // con il ciclo for in app.component.html l'onchanges non mi da il valore precedente perchè il componente viene distrutto per rieseguire il ciclo for, quindi ogni volta è come se fosse il primo change
   ngOnChanges(changes: SimpleChanges): void {
     //Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
     //Add '${implements OnChanges}' to the class.
-    console.log("onchanges");
+    console.log("ngOnChanges");
     console.log(changes);
 
     // console.log(changes.cardIndex.currentValue);
+  }
+
+  // metodo chiamato da NG ogni volta che finisce di controllare il content del component
+  // tutte le volte che NG effettua la change detection
+  // la logica che mettiamo in questo hook deve essere leggera perchè l'hook viene chiamato tantissime volte e potrebbe causare dei rallentamenti nella user interface
+  // possiamo modificare solo le proprietà che non sono state utilizzate nella parte del content
+  // ad esempio la proprietà iconUrl di course viene passata al componente course-image, viene quindi utilizzata prima della renderizzazione della view e quindi se provassi a modificarla riceverei un errore
+  ngAfterContentChecked(): void {
+    //Called after every check of the component's or directive's content.
+    //Add 'implements AfterContentChecked' to the class.
+    console.log("ngAfterContentChecked");
+    // cambio il titolo del corso dopo che è stato controllato
+    this.course.description = "content checked";
   }
 
   // il metodo onSaveClicked riceve il valore passato nell'input ed emette un evento custom che ha come payload un oggetto di tipo Course

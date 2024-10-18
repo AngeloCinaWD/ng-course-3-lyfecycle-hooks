@@ -99,10 +99,8 @@ export class AppComponent {
 
     // this.courses$.pipe().subscribe((value) => console.log(value));
 
-    const course: Course = this.courses[0];
-
     const newCourse: Course = {
-      ...course,
+      ...this.courses[0],
       description: "new description",
     };
 

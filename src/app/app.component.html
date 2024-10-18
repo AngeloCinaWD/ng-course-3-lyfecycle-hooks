@@ -12,11 +12,8 @@
 
 <div>
   <h1>corsi from courses</h1>
-  <div class="courses">
-    <course-card
-      [course]="courses[0]"
-      (courseChanged)="onCourseChanged($event)"
-    >
+  <div class="courses" *ngIf="courses as corsi">
+    <course-card [course]="corsi[0]" (courseChanged)="onCourseChanged($event)">
       <course-image [src]="courses[0].iconUrl"></course-image>
     </course-card>
   </div>
