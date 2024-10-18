@@ -1,6 +1,7 @@
 import {
   AfterContentChecked,
   AfterContentInit,
+  AfterViewChecked,
   AfterViewInit,
   Attribute,
   ChangeDetectionStrategy,
@@ -29,7 +30,12 @@ import { CoursesService } from "../services/courses.service";
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CourseCardComponent
-  implements OnInit, OnDestroy, OnChanges, AfterContentChecked
+  implements
+    OnInit,
+    OnDestroy,
+    OnChanges,
+    AfterContentChecked,
+    AfterViewChecked
 {
   @Input()
   course: Course;
@@ -76,13 +82,24 @@ export class CourseCardComponent
   // tutte le volte che NG effettua la change detection
   // la logica che mettiamo in questo hook deve essere leggera perchè l'hook viene chiamato tantissime volte e potrebbe causare dei rallentamenti nella user interface
   // possiamo modificare solo le proprietà che non sono state utilizzate nella parte del content
-  // ad esempio la proprietà iconUrl di course viene passata al componente course-image, viene quindi utilizzata prima della renderizzazione della view e quindi se provassi a modificarla riceverei un errore
+  // ad esempio la proprietà iconUrl di course viene passata al componente course-image, viene quindi utilizzata prima della renderizzazione della view e quindi se provassi a modificarla riceverei un errore, NG non sa quale valore utilizzare, se il precedente o quello nuovo
   ngAfterContentChecked(): void {
     //Called after every check of the component's or directive's content.
     //Add 'implements AfterContentChecked' to the class.
     console.log("ngAfterContentChecked");
     // cambio il titolo del corso dopo che è stato controllato
     this.course.description = "content checked";
+  }
+
+  //chiamato dopo l'ngAfterContentChecked
+  // dopo aver controllato il content NG controlla il template per vedere se qualcosa è cambiato
+  // non si può più modificare il contenuto
+  // questo hook va utilizzato quando si vuole intervenire sulla vista dopo che tutto è stato controllato e caricato, ad esempio se volessi effettuare lo scroll della pagina in fondo dopo aver ricevuto tutti i dati, piccoli interventi sul DOM
+  // anche qui non si deve implementare logica che vada ad appesantire la memoria
+  ngAfterViewChecked(): void {
+    //Called after every check of the component's view. Applies to components only.
+    //Add 'implements AfterViewChecked' to the class.
+    console.log("ngAfterViewChecked");
   }
 
   // il metodo onSaveClicked riceve il valore passato nell'input ed emette un evento custom che ha come payload un oggetto di tipo Course
