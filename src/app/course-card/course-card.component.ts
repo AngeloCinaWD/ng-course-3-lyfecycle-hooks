@@ -9,10 +9,12 @@ import {
   EventEmitter,
   Inject,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
   QueryList,
+  SimpleChanges,
   ViewEncapsulation,
 } from "@angular/core";
 import { Course } from "../model/course";
@@ -25,7 +27,7 @@ import { CoursesService } from "../services/courses.service";
   styleUrls: ["./course-card.component.css"],
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CourseCardComponent implements OnInit, OnDestroy {
+export class CourseCardComponent implements OnInit, OnDestroy, OnChanges {
   @Input()
   course: Course;
 
@@ -38,16 +40,33 @@ export class CourseCardComponent implements OnInit, OnDestroy {
 
   // ricevo il valore passato dal parent component nell'attributo type invece che riceverlo come @Input, in questo modo la change detection non andrà a controllare se ci sono state modifiche in questo input
   constructor(@Attribute("type") private type: string) {
-    console.log(type);
+    console.log("costruttore");
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log("oninit");
+  }
 
   // nel momento in cui clicco il button destroy courses, ng aggiorna la view e diswtrugge i componenti, chiama i metodi in questo hook ed ho il console log per ogni componente distrutto
   ngOnDestroy(): void {
     //Called once, before the instance is destroyed.
     //Add 'implements OnDestroy' to the class.
-    console.log("distrutto componente");
+    console.log("ondestroy");
+  }
+
+  // chiamato subito dopo il costruttore, prima di ngOnInit
+  // metodo utile se si vuole fare un confronto fra valori nuovi e vecchi
+  // metodo chiamato da NG ogni volta che cambia qualcosa nelle @Imput, dall'esterno, ogni volta che dal parent arriva un valore di @Input differente da quello corrente
+  // l'argomento changes è un oggetto contenente altri oggetti, ogni oggetto è una proprietà @Input con 3 proprietà: previousValue, currentValue e firstChange
+  // SimpleChange è un type di angular
+  // con il ciclo for in app.component.html l'onchanges non mi da il valore precedente perchè il componente viene distrutto per rieseguire il ciclo for, quindi ogni volta è come se fosse il primo change
+  ngOnChanges(changes: SimpleChanges): void {
+    //Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
+    //Add '${implements OnChanges}' to the class.
+    console.log("onchanges");
+    console.log(changes);
+
+    // console.log(changes.cardIndex.currentValue);
   }
 
   // il metodo onSaveClicked riceve il valore passato nell'input ed emette un evento custom che ha come payload un oggetto di tipo Course

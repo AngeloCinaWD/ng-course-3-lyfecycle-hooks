@@ -6,28 +6,31 @@
 </div>
 
 <button (click)="destroyCourses()">Distruggi corsi</button>
+<button (click)="changeDescriptionCourse0()">
+  Cambia description courses[0]
+</button>
 
 <div>
-  <!-- <h1>corsi from courses</h1>
+  <h1>corsi from courses</h1>
   <div class="courses">
     <course-card
-      *ngFor="let course of courses"
-      [course]="course"
+      [course]="courses[0]"
       (courseChanged)="onCourseChanged($event)"
     >
-      <course-image [src]="course.iconUrl"></course-image>
+      <course-image [src]="courses[0].iconUrl"></course-image>
     </course-card>
   </div>
 
-  <h1>corsi from courses$</h1> -->
+  <!-- <h1>corsi from courses$</h1>
   <div class="courses" *ngIf="courses$ | async as courses">
     <course-card
-      *ngFor="let course of courses"
+      *ngFor="let course of courses; index as index"
       [course]="course"
+      [cardIndex]="index"
       (courseChanged)="onCourseChanged($event)"
       type="beginner"
     >
       <course-image [src]="course.iconUrl"></course-image>
     </course-card>
-  </div>
+  </div> -->
 </div>

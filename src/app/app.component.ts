@@ -86,6 +86,26 @@ export class AppComponent {
   }
 
   destroyCourses() {
-    this.courses$ = Observable.create([]);
+    this.courses = [];
+  }
+
+  // metodo che cambia la description del corso 0
+  // per triggerare l'onChanges del componente figlio non posso modificare la description dello stesso oggetto Course, ma devo andare a modificare l'intero oggetto
+  // ne creo una copia, gli cambio la description e poi dico che il vecchio corso 0 è uguale alla sua copia modificata
+  // avevo lavorato con l'observable in courses$ poi per modificare ho riutilizzato courses
+  // async changeDescriptionCourse0() {
+  changeDescriptionCourse0() {
+    // let courses: Course[] = await this.courses$.toPromise();
+
+    // this.courses$.pipe().subscribe((value) => console.log(value));
+
+    const course: Course = this.courses[0];
+
+    const newCourse: Course = {
+      ...course,
+      description: "new description",
+    };
+
+    this.courses[0] = newCourse;
   }
 }
